@@ -1,0 +1,232 @@
+﻿@page "/"
+@using Npgsql;
+
+<PageTitle>Index</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">Create a Post</h1>
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" @bind="@newPost.Username" placeholder="Enter Username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="postContent" class="form-label">Post Content</label>
+                        <textarea class="form-control" id="postContent" @bind="@newPost.Content" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profilePictureUrl" class="form-label">Profile Picture URL</label>
+                        <input type="text" class="form-control" id="profilePictureUrl" @bind="@newPost.ProfilePictureUrl" placeholder="Enter Profile Picture URL">
+                    </div>
+                    <div class="mb-3">
+                        <label for="moodSelection" class="form-label">Mood</label>
+                        <select class="form-select" id="moodSelection" @bind="@newPost.Mood">
+                            <option value="" disabled selected>Select your mood</option>
+                            <option>Happy</option>
+                            <option>Sad</option>
+                            <option>Excited</option>
+                            <option>Angry</option>
+                            <option>Thoughtful</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="topicSelection" class="form-label">Topic</label>
+                        <select class="form-select" id="topicSelection" @bind="@newPost.Topic">
+                            <option value="" disabled selected>Select a topic</option>
+                            <option>Blazor</option>
+                            <option>ASP.NET Core</option>
+                            <option>C#</option>
+                            <option>Web Development</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @onclick="AddPost">Post</button>
+                </div>
+            </div>
+
+            <div class="my-4">
+                @foreach (var post in Posts)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+
+                            <small class="text-muted">
+                                @{
+                                    var dateDisplay = post.CreatedAt.HasValue ? post.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss") : "No Date";
+                                }
+                                @dateDisplay
+                            </small>
+
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <img src="@GetProfilePictureUrl(post.ProfilePictureUrl)" alt="Profile Picture" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                </div>
+                                <div>
+                                    <h5 class="card-title m-0">@post.Username</h5>
+                                    <p class="card-text m-0"><strong>Mood:</strong> @post.Mood</p>
+                                    <p class="card-text m-0"><strong>Topic:</strong> @post.Topic</p>
+                                </div>
+                            </div>
+                            @DisplayContentWithNewLines(post.Content)
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@inject IJSRuntime JSRuntime
+@using System.Net.Http.Json
+@using Npgsql
+
+@code {
+    private Post newPost = new Post();
+    private List<Post> Posts { get; set; } = new List<Post>();
+    private static readonly HttpClient httpClient = new HttpClient();
+
+    private static readonly string RootCertPath = @"C:\Users\guam\AppData\Roaming\postgresql\root.crt";
+    private static readonly string ConnectionString = $"Host=bayou-fisher-6506.g8z.cockroachlabs.cloud;" +
+                                                      "Port=26257;" +
+                                                      "Database=defaultdb;" +
+                                                      "Username=jose;" +
+                                                      "Password=RXE6krVkjIvBvHbBj2h7Og;" +
+                                                      "SslMode=VerifyFull;" +
+                                                      "Trust Server Certificate=false;" +
+                                                      $"RootCertificate={RootCertPath};";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPostsFromDatabase();
+    }
+    private bool ValidateAndSanitizePost(Post post)
+    {
+        if (string.IsNullOrEmpty(post.Username) || post.Username.Length > 15 || !post.Username.All(char.IsLetterOrDigit))
+        {
+            JSRuntime.InvokeVoidAsync("alert", "Invalid username. The username should not exceed 15 characters and must contain only letters and digits.");
+            return false;
+        }
+
+        if (post.Content != null && post.Content.Length > 280)
+        {
+            JSRuntime.InvokeVoidAsync("alert", "Post content too long. The content should not exceed 280 characters.");
+            return false;
+        }
+
+        post.ProfilePictureUrl = GetProfilePictureUrl(post.ProfilePictureUrl);
+
+        return true;
+    }
+
+    private MarkupString DisplayContentWithNewLines(string content)
+    {
+        if (string.IsNullOrEmpty(content))
+        {
+            return new MarkupString(string.Empty);
+        }
+
+        var contentWithBrTag = content.Replace("\r\n", "<br>").Replace("\n", "<br>");
+        return new MarkupString(contentWithBrTag);
+    }
+    private async Task AddPost()
+    {
+        if (!ValidateAndSanitizePost(newPost))
+        {
+            return;
+        }
+
+        var worldTimeApiResponse = await httpClient.GetFromJsonAsync<WorldTimeApiResponse>("https://worldtimeapi.org/api/timezone/Etc/UTC");
+        if (worldTimeApiResponse != null && worldTimeApiResponse.Datetime != default)
+        {
+            newPost.CreatedAt = worldTimeApiResponse.Datetime;
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Unable to validate the current time.");
+            return;
+        }
+
+        try
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                await connection.OpenAsync();
+                using (var command = new NpgsqlCommand(@"INSERT INTO posts (username, mood, topic, profile_picture_url, content, created_at)
+                                                        VALUES (@username, @mood, @topic, @profile_picture_url, @content, @created_at)", connection))
+                {
+                    command.Parameters.AddWithValue("@username", newPost.Username);
+                    command.Parameters.AddWithValue("@mood", newPost.Mood);
+                    command.Parameters.AddWithValue("@topic", newPost.Topic);
+                    command.Parameters.AddWithValue("@profile_picture_url", newPost.ProfilePictureUrl ?? string.Empty);
+                    command.Parameters.AddWithValue("@content", newPost.Content ?? string.Empty);
+                    command.Parameters.AddWithValue("@created_at", newPost.CreatedAt);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+
+            await LoadPostsFromDatabase();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"An error occurred: {ex.Message}");
+        }
+
+        newPost = new Post();
+    }
+
+    private async Task LoadPostsFromDatabase()
+    {
+        var posts = new List<Post>();
+
+        using (var connection = new NpgsqlConnection(ConnectionString))
+        {
+            await connection.OpenAsync();
+            using (var command = new NpgsqlCommand("SELECT username, mood, topic, profile_picture_url, content, created_at FROM posts ORDER BY id DESC", connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var post = new Post
+                            {
+                                Username = reader.GetString(0),
+                                Mood = reader.GetString(1),
+                                Topic = reader.GetString(2),
+                                ProfilePictureUrl = reader.IsDBNull(3) ? null : reader.GetString(3),
+                                Content = reader.IsDBNull(4) ? null : reader.GetString(4),
+                                CreatedAt = reader.IsDBNull(5) ? default(DateTime?) : reader.GetDateTime(5)
+                            };
+                        posts.Add(post);
+                    }
+                }
+            }
+        }
+
+        Posts = posts;
+    }
+
+
+    private string GetProfilePictureUrl(string url)
+    {
+        return string.IsNullOrEmpty(url) ? "https://placehold.co/100x100" : url;
+    }
+
+    private class Post
+    {
+        public string Username { get; set; }
+        public string Mood { get; set; }
+        public string Topic { get; set; }
+        public string ProfilePictureUrl { get; set; }
+        public string Content { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
+
+    private class WorldTimeApiResponse
+    {
+        public DateTime Datetime { get; set; }
+    }
+}
