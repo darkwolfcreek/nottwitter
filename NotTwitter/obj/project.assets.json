@@ -197,11 +197,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\guam\\source\\repos\\NotTwitter\\NotTwitter\\NotTwitter.csproj",
+      "projectUniqueName": "C:\\Users\\guam\\Documents\\GitHub\\nottwitter\\NotTwitter\\NotTwitter.csproj",
       "projectName": "NotTwitter",
-      "projectPath": "C:\\Users\\guam\\source\\repos\\NotTwitter\\NotTwitter\\NotTwitter.csproj",
+      "projectPath": "C:\\Users\\guam\\Documents\\GitHub\\nottwitter\\NotTwitter\\NotTwitter.csproj",
       "packagesPath": "C:\\Users\\guam\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\guam\\source\\repos\\NotTwitter\\NotTwitter\\obj\\",
+      "outputPath": "C:\\Users\\guam\\Documents\\GitHub\\nottwitter\\NotTwitter\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

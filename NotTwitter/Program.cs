@@ -1,23 +1,17 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using NotTwitter.Data;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
-
-// Define and add the IpInfoService
 builder.Services.AddHttpClient<IpInfoService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -33,7 +27,6 @@ app.MapFallbackToPage("/_Host");
 
 app.Run();
 
-// Define the IpInfoService class
 public class IpInfoService
 {
     private readonly HttpClient _httpClient;
@@ -52,7 +45,6 @@ public class IpInfoService
         }
         catch (Exception ex)
         {
-            // Handle exceptions (e.g., log them or return null)
             return null;
         }
     }
