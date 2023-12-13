@@ -11,9 +11,9 @@ NotTwitter is a web application for creating and viewing posts, designed with a 
 - **User-Friendly Interface:** A streamlined interface for an enjoyable user experience.
 
 ## Requirements
-- .NET 5.0 or higher
+- .NET 7.0 or higher
 - PostgreSQL
-- Blazor WebAssembly
+- Blazor Server
 
 ## Installation
 1. Clone the repository.
