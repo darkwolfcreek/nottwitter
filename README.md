@@ -3,55 +3,54 @@
 ![NotTwitter Logo](https://i.imgur.com/sqLZbcO.png)
 
 ## Introduction
-NotTwitter is a web application for creating and viewing posts, designed with a focus on simplicity and user interaction. It leverages Blazor for the front-end and PostgreSQL for data management.
+Welcome to NotTwitter, a Blazor Server-based web application designed for creating and viewing posts. This platform offers an interactive way for users to share and engage with content, utilizing .NET 7 and PostgreSQL for efficient and secure data management.
 
 ## Features
-- **Create Posts:** Users can easily create posts with options like username, mood, topic, and profile picture URL.
-- **View Posts:** Browse through a feed of posts, each displaying the user's mood, topic, and the time of posting.
-- **User-Friendly Interface:** A streamlined interface for an enjoyable user experience.
+- **Post Creation:** Users can create posts with details like username, content, mood, and topic.
+- **Interactive Feed:** The application showcases a dynamic feed of posts with relevant details.
+- **User Engagement:** Designed for easy interaction and browsing of posts.
 
 ## Requirements
-- .NET 7.0 or higher
+- .NET 7
 - PostgreSQL
 - Blazor Server
 
 ## Installation
-1. Clone the repository.
-2. Set up a PostgreSQL database.
-3. Run the application in an IDE like Visual Studio.
+1. Clone the repository to your local environment.
+2. Ensure you have a PostgreSQL database setup.
+3. Open the project in an IDE such as Visual Studio and run the application.
 
 ## Configuration
-**Important:** For security reasons, it's advised to use environment variables instead of hardcoding the connection settings. This prevents sensitive data from being exposed in your codebase.
+**Security Notice:** It's highly recommended to use environment variables for database connection settings to enhance security. Avoid hardcoding sensitive information in your source code.
 
-To configure your database connection using environment variables:
-1. Set environment variables for your database credentials.
-2. Modify the application to read these variables.
+### Setting up Environment Variables
+Create a `.env` file or set environment variables directly in your system for your database credentials. Your application should be configured to read these variables for establishing database connections.
 
-Example (in .env file):
+Example in `.env` file:
 ```
-DB_HOST=your_host
-DB_PORT=your_port
-DB_NAME=your_db
-DB_USER=your_username
-DB_PASSWORD=your_password
+DB_HOST=your_database_host
+DB_PORT=your_database_port
+DB_NAME=your_database_name
+DB_USER=your_database_username
+DB_PASSWORD=your_database_password
 ```
 
-In your code, access these variables instead of hardcoding the credentials.
+Adapt your application's database connection logic to utilize these environment variables.
 
 ## Usage
-- **To Create a Post:** Fill the form and submit.
-- **To View Posts:** Posts are displayed on the homepage.
+- **Creating a Post:** Navigate to the post creation section, fill in the details, and submit.
+- **Viewing Posts:** Browse through the latest posts on the home page.
 
 ## Contributing
-Contributions are welcome. Please fork the repo, make your changes, and submit a pull request.
+Your contributions make NotTwitter better. Fork the repository, make your changes, and submit a pull request for review.
 
 ## License
-MIT License - see LICENSE file for details.
+This project is released under the MIT License. See the LICENSE file for more information.
 
 ## Support
-For support, email or open an issue on the GitHub repository.
+For support and queries, please open an issue on the GitHub repository or contact via provided email.
 
 ## Acknowledgments
-- Blazor
-- Npgsql
-- Community Contributions
+- The .NET 7 and Blazor Server frameworks
+- Npgsql for PostgreSQL integration
+- Contributions from the developer community
